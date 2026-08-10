@@ -600,6 +600,19 @@ def confirm_ollama_endpoint(url: str) -> None:
         )
 
 
+def _ensure_secure_dotenv_file(path: Path) -> None:
+    """Create or update a dotenv file with restrictive permissions.
+
+    API keys are sensitive secrets, so the file should be readable only by the
+    current user. On Windows the permission model is different, so this is a
+    no-op there.
+    """
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.touch(exist_ok=True)
+    if os.name != "nt":
+        os.chmod(path, 0o600)
+
+
 def ensure_api_key(provider: str) -> str | None:
     """Make sure the API key for `provider` is available in the environment.
 
@@ -642,9 +655,9 @@ def ensure_api_key(provider: str) -> str | None:
         )
         return None
 
-    env_path = find_dotenv(usecwd=True) or str(Path.cwd() / ".env")
-    Path(env_path).touch(exist_ok=True)
-    set_key(env_path, env_var, key)
+    env_path = Path(find_dotenv(usecwd=True) or str(Path.cwd() / ".env"))
+    _ensure_secure_dotenv_file(env_path)
+    set_key(str(env_path), env_var, key)
     os.environ[env_var] = key
     console.print(f"[green]Saved {env_var} to {env_path}[/green]")
     return key

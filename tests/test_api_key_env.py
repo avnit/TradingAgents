@@ -131,6 +131,21 @@ def test_ensure_api_key_user_cancels_returns_none(monkeypatch, tmp_path, cli_uti
         assert "XAI_API_KEY" not in env_file.read_text()
 
 
+def test_ensure_api_key_restricts_dotenv_permissions(monkeypatch, tmp_path, cli_utils):
+    """Newly written .env files should be readable only by the owner."""
+    monkeypatch.delenv("DEEPSEEK_API_KEY", raising=False)
+    monkeypatch.chdir(tmp_path)
+
+    fake_prompt = type("P", (), {"ask": staticmethod(lambda: "sk-deepseek-test")})()
+    with patch.object(cli_utils.questionary, "password", return_value=fake_prompt):
+        cli_utils.ensure_api_key("deepseek")
+
+    env_file = tmp_path / ".env"
+    if os.name != "nt":
+        mode = env_file.stat().st_mode & 0o777
+        assert mode & 0o077 == 0
+
+
 def test_ensure_api_key_updates_existing_env_file(monkeypatch, tmp_path, cli_utils):
     """An existing .env with other keys must be preserved on writeback."""
     monkeypatch.delenv("OPENROUTER_API_KEY", raising=False)
