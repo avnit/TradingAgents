@@ -302,3 +302,28 @@ Please reference our work if you find *TradingAgents* provides you with some hel
       url={https://arxiv.org/abs/2412.20138}, 
 }
 ```
+
+<!-- ARCH-DIAGRAM:START -->
+
+## Architecture
+
+> Auto-generated architecture diagram. See [`docs/context-map.md`](docs/context-map.md) for the full context map (core application, containers/cloud, and database connections).
+
+```mermaid
+flowchart TD
+  User([User / Client])
+  App["TradingAgents<br/><small>main.py</small><br/>Express / Node"]
+  AI["Vertex AI / Gemini<br/>(LLM / Agent Engine)"]
+  DB0[("SQLite")]
+  SVC0["AWS"]
+  SVC1["Azure"]
+  Img["Container image<br/>(Docker/Compose)"]
+  User --> App
+  App --> AI
+  App --> DB0
+  App --> SVC0
+  App --> SVC1
+  App -.deploy.-> Img
+```
+
+<!-- ARCH-DIAGRAM:END -->
